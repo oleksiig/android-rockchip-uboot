@@ -1,0 +1,23 @@
+Introduction
+============
+
+Get some prerequisites
+======================
+
+You need the Python elftools.elf.elffile library for make_fit_atf.py to work:
+
+  > sudo apt install python-pyelftools
+
+Compile U-Boot
+==============
+  > cd uboot
+  > ./make.sh x3399evk
+
+Flash the image with Rockchip miniloader
+----------------------------------------
+Power on(or reset with RESET KEY) with RECOVERY KEY preesed, and then:
+  > sudo ../rkbin/tools/rkdeveloptool db rk3399_loader_v1.17.115.bin
+  > sudo ../rkbin/tools/rkdeveloptool ul rk3399_loader_v1.17.115.bin
+  > sudo ../rkbin/tools/rkdeveloptool wl 0x4000 uboot.img
+  > sudo ../rkbin/tools/rkdeveloptool wl 0x6000 trust.img
+  > sudo ../rkbin/tools/rkdeveloptool rd

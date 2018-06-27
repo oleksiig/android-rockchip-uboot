@@ -1,0 +1,222 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+#include <dt-bindings/pwm/pwm.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+
+
+#include "rk3399.dtsi"
+#include "rk3399-sdram-lpddr3-4GB-1600.dtsi"
+#include "rk3399-u-boot.dtsi"
+
+/ {
+	model = "X3399 Evaluation Kit";
+	compatible = "rockchip,x3399evk", "rockchip,rk3399";
+
+	chosen {
+		stdout-path = &uart2;
+		u-boot,spl-boot-order = &sdhci, &sdmmc;
+	};
+
+	/* Board input voltage */
+	dc_12v: dc-12v {
+		compatible = "regulator-fixed";
+		regulator-name = "DC_12V";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <12000000>;
+		regulator-max-microvolt = <12000000>;
+	};
+
+	/* Standby supply 3.3v */
+	vcc3v3_s5: vcc3v3-s5 {
+		compatible = "regulator-fixed";
+		regulator-name = "VCC3V3_S5";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&dc_12v>;
+	};
+
+	vcc3v3_sys: vcc3v3-sys {
+		compatible = "regulator-fixed";
+		regulator-name = "VCC3V3_SYS";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&dc_12v>;
+	};
+
+	vcc5v0_sys: vcc5v0-sys {
+		compatible = "regulator-fixed";
+		regulator-name = "VCC5V0_SYS";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		vin-supply = <&dc_12v>;
+	};
+
+	vcc5v0_host0: fixedregulator@3 {
+		compatible = "regulator-fixed";
+		regulator-name = "VCC_5V0_USB_HOST0";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio4 RK_PD3 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	vcc5v0_host1: fixedregulator@4 {
+		compatible = "regulator-fixed";
+		regulator-name = "VCC_5V0_USB_HOST1";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio4 RK_PD1 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+};
+
+&emmc_phy {
+	status = "okay";
+};
+
+&pwm0 {
+	status = "okay";
+};
+
+&pwm2 {
+	status = "okay";
+};
+
+&pwm3 {
+	status = "okay";
+};
+
+&saradc {
+	status = "okay";
+};
+
+&sdmmc {
+	bus-width = <4>;
+	status = "okay";
+};
+
+&sdhci {
+	bus-width = <8>;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
+	non-removable;
+	status = "okay";
+};
+
+&uart2 {
+	status = "okay";
+};
+
+&usb_host0_ehci {
+	status = "okay";
+};
+
+&usb_host0_ohci {
+	status = "okay";
+};
+
+&usb_host1_ehci {
+	status = "okay";
+};
+
+&usb_host1_ohci {
+	status = "okay";
+};
+
+&usbdrd3_0 {
+	status = "okay";
+};
+
+&usbdrd_dwc3_0 {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&u2phy0 {
+	status = "okay";
+
+	u2phy0_otg: otg-port {
+		status = "okay";
+	};
+};
+
+&i2c0 {
+	status = "okay";
+	clock-frequency = <400000>;
+	i2c-scl-falling-time-ns = <50>;
+	i2c-scl-rising-time-ns = <100>;
+
+	rk808: pmic@1b {
+		compatible = "rockchip,rk808";
+		clock-output-names = "xin32k", "rk808-clkout2";
+		interrupt-parent = <&gpio0>;
+		interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pmic_int_l>;
+		reg = <0x1b>;
+		rockchip,system-power-controller;
+		#clock-cells = <1>;
+		status = "okay";
+
+		vcc1-supply = <&vcc3v3_sys>;
+		vcc2-supply = <&vcc3v3_sys>;
+		vcc3-supply = <&vcc3v3_sys>;
+		vcc4-supply = <&vcc3v3_sys>;
+		vcc6-supply = <&vcc3v3_s5>;
+		vcc7-supply = <&vcc3v3_sys>;
+		vcc8-supply = <&vcc3v3_sys>;
+		vcc9-supply = <&vcc3v3_sys>;
+		vcc10-supply = <&vcc3v3_sys>;
+		vcc11-supply = <&vcc3v3_sys>;
+		vcc12-supply = <&vcc_1v8>;
+		vddio-supply = <&vcc1v8_pmu>;
+
+		regulators {
+			vcc1v8_pmu: LDO_REG3 {
+				regulator-name = "VCC_1V8_PMU";
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1800000>;
+				};
+			};
+
+			vcc_1v8: DCDC_REG4 {
+				regulator-name = "VCC_1V8";
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1800000>;
+				};
+			};
+		};
+	};
+};
+
+&pinctrl {
+	pmic {
+		pmic_int_l: pmic-int-l {
+			rockchip,pins =
+				<1 21 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+
+		pmic_dvs2: pmic-dvs2 {
+			rockchip,pins =
+				<1 18 RK_FUNC_GPIO &pcfg_pull_down>;
+		};
+	};
+};

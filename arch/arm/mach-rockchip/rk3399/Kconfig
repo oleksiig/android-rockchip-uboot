@@ -62,6 +62,11 @@ config TARGET_CHROMEBOOK_BOB
 	  display. It includes a Chrome OS EC (Cortex-M3) to provide access to
 	  the keyboard and battery functions.
 
+config TARGET_X3399EVK
+	bool "X3399 Evaluation Kit"
+	help
+	  X3399-EVK is a evaluation kit for module X3399 based on Rockchp RK3399
+
 endchoice
 
 config SYS_SOC
@@ -71,6 +76,7 @@ config SYS_MALLOC_F_LEN
 	default 0x0800
 
 source "board/rockchip/evb_rk3399/Kconfig"
+source "board/rockchip/x3399evk/Kconfig"
 source "board/theobroma-systems/puma_rk3399/Kconfig"
 source "board/vamrs/rock960_rk3399/Kconfig"
 source "board/google/gru/Kconfig"
