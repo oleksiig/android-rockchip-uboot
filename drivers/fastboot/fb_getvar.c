@@ -110,7 +110,7 @@ static int getvar_get_part_info(const char *part_name, char *response,
 	r = fastboot_mmc_get_part_info(part_name, &dev_desc, &part_info,
 				       response);
 	if (r >= 0 && size)
-		*size = part_info.size;
+		*size = (part_info.size * part_info.blksz); /* calc size in bytes */
 # elif CONFIG_IS_ENABLED(FASTBOOT_FLASH_NAND)
 	struct part_info *part_info;
 
