@@ -251,6 +251,9 @@ struct sdhci_ops {
 	void	(*set_clock)(struct sdhci_host *host, u32 div);
 	int (*platform_execute_tuning)(struct mmc *host, u8 opcode);
 	void (*set_delay)(struct sdhci_host *host);
+
+	void (*phy_power_off)(struct sdhci_host *host);
+	void (*phy_power_on)(struct sdhci_host *host, u32 clock);
 };
 
 #if CONFIG_IS_ENABLED(MMC_SDHCI_ADMA)

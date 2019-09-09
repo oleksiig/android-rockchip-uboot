@@ -13,6 +13,11 @@
 #include <mmc.h>
 #include <sdhci.h>
 
+/* 400KHz is max freq for card ID etc. Use that as min */
+#ifndef EMMC_MIN_FREQ
+#define EMMC_MIN_FREQ   400000
+#endif
+
 #if defined(CONFIG_FIXED_SDHCI_ALIGNED_BUFFER)
 void *aligned_buffer = (void *)CONFIG_FIXED_SDHCI_ALIGNED_BUFFER;
 #else
@@ -412,6 +417,8 @@ static int sdhci_set_clock(struct mmc *mmc, unsigned int clock)
 {
 	struct sdhci_host *host = mmc->priv;
 	unsigned int div, clk = 0, timeout;
+	int phy_power_cycle = (host->clock != clock) && (clock > EMMC_MIN_FREQ);
+	int ret = 0;
 
 	/* Wait max 20 ms */
 	timeout = 200;
@@ -426,6 +433,9 @@ static int sdhci_set_clock(struct mmc *mmc, unsigned int clock)
 		timeout--;
 		udelay(100);
 	}
+
+	if (phy_power_cycle && host->ops && host->ops->phy_power_off)
+		host->ops->phy_power_off(host);
 
 	sdhci_writew(host, 0, SDHCI_CLOCK_CONTROL);
 
@@ -491,7 +501,8 @@ static int sdhci_set_clock(struct mmc *mmc, unsigned int clock)
 		if (timeout == 0) {
 			printf("%s: Internal clock never stabilised.\n",
 			       __func__);
-			return -EBUSY;
+			ret = -EBUSY;
+			goto exit;
 		}
 		timeout--;
 		udelay(1000);
@@ -499,7 +510,12 @@ static int sdhci_set_clock(struct mmc *mmc, unsigned int clock)
 
 	clk |= SDHCI_CLOCK_CARD_EN;
 	sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
-	return 0;
+
+exit:
+	if (phy_power_cycle && host->ops && host->ops->phy_power_on)
+		host->ops->phy_power_on(host, clock);
+
+	return ret;
 }
 
 static void sdhci_set_power(struct sdhci_host *host, unsigned short power)
