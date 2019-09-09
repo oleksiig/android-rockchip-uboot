@@ -70,7 +70,11 @@
         "name=misc,size=512K,uuid=${uuid_gpt_misc};" \
         "name=frp,size=512K,uuid=${uuid_gpt_frp};" \
         "name=metadata,size=16M,uuid=${uuid_gpt_metadata};" \
-        "name=userdata,size=-,uuid=${uuid_gpt_userdata};\0"
+        "name=userdata,size=-,uuid=${uuid_gpt_userdata};\0" \
+    "fstype_system=ext4\0" \
+    "fstype_vendor=ext4\0" \
+    "fstype_cache=ext4\0" \
+    "fstype_userdata=ext4\0"
 
 #endif /* ifndef CONFIG_SPL_BUILD */
 

@@ -228,6 +228,17 @@ static void getvar_partition_type(char *part_name, char *response)
 	struct blk_desc *dev_desc;
 	disk_partition_t part_info;
 
+	{
+		char var_name[64];
+		sprintf(var_name, "fstype_%s", part_name);
+		const char *fstype = env_get(var_name);
+		
+		if(fstype != NULL) {
+			fastboot_okay(fstype, response);
+			return;
+		}
+	}
+
 	r = fastboot_mmc_get_part_info(part_name, &dev_desc, &part_info,
 				       response);
 	if (r >= 0) {
