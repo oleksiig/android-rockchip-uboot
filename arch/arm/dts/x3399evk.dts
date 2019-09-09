@@ -16,6 +16,8 @@
 	chosen {
 		stdout-path = &uart2;
 		u-boot,spl-boot-order = &sdhci, &sdmmc;
+		u-boot,mmc-env-partition = <1>; 	/* boot0 */
+		u-boot,mmc-env-offset = <4161536>;	/* boot0: 4194304 - 32768 */
 	};
 
 	/* Board input voltage */
