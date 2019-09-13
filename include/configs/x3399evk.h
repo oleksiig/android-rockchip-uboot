@@ -5,6 +5,11 @@
 
 #include "rockchip-common.h"
 
+#define CONFIG_GICV3                            1
+#define GICD_BASE                               0xFEE00000
+#define GICR_BASE                               0xFEF00000
+#define GICC_BASE                               0xFFF00000
+
 /* ENV location - eMMC */
 #define CONFIG_SYS_MMC_ENV_DEV                  0
 #define CONFIG_SYS_MMC_ENV_PART                 1
