@@ -1314,6 +1314,8 @@ int android_image_get_ramdisk(const struct andr_img_hdr *hdr,
 			      ulong *rd_data, ulong *rd_len);
 int android_image_get_second(const struct andr_img_hdr *hdr,
 			      ulong *second_data, ulong *second_len);
+int android_image_get_dtb(const struct andr_img_hdr *hdr,
+			      ulong *dtb_data, ulong *dtb_len);
 ulong android_image_get_end(const struct andr_img_hdr *hdr);
 ulong android_image_get_kload(const struct andr_img_hdr *hdr);
 ulong android_image_get_kcomp(const struct andr_img_hdr *hdr);

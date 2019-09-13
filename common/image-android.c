@@ -119,6 +119,16 @@ ulong android_image_get_end(const struct andr_img_hdr *hdr)
 	end += ALIGN(hdr->ramdisk_size, hdr->page_size);
 	end += ALIGN(hdr->second_size, hdr->page_size);
 
+	if (hdr->header_version > 0) {
+		struct andr_img_hdr_v1 * hdrv = (struct andr_img_hdr_v1*)hdr;
+		end += ALIGN(hdrv->recovery_dtbo_size, hdr->page_size);
+	}
+
+	if (hdr->header_version > 1) {
+		struct andr_img_hdr_v2 * hdrv = (struct andr_img_hdr_v2*)hdr;
+		end += ALIGN(hdrv->dtb_size, hdr->page_size);
+	}
+
 	return end;
 }
 
@@ -140,8 +150,9 @@ ulong android_image_get_kcomp(const struct andr_img_hdr *hdr)
 int android_image_get_ramdisk(const struct andr_img_hdr *hdr,
 			      ulong *rd_data, ulong *rd_len)
 {
+	*rd_data = *rd_len = 0;
+
 	if (!hdr->ramdisk_size) {
-		*rd_data = *rd_len = 0;
 		return -1;
 	}
 
@@ -175,6 +186,32 @@ int android_image_get_second(const struct andr_img_hdr *hdr,
 	return 0;
 }
 
+int android_image_get_dtb(const struct andr_img_hdr *hdr,
+			      ulong *dtb_data, ulong *dtb_len)
+{
+	*dtb_data = *dtb_len = 0;
+
+	if (hdr->header_version < 2) {
+		return -1;
+	}
+
+	struct andr_img_hdr_v2 *v2 = (struct andr_img_hdr_v2*)hdr;
+
+	*dtb_data = (unsigned long)hdr;
+	*dtb_data += hdr->page_size;
+	*dtb_data += ALIGN(hdr->kernel_size, hdr->page_size);
+	*dtb_data += ALIGN(hdr->ramdisk_size, hdr->page_size);
+	*dtb_data += ALIGN(hdr->second_size, hdr->page_size);
+	*dtb_data += ALIGN(v2->v1.recovery_dtbo_size, hdr->page_size);
+
+	*dtb_len = v2->dtb_size;
+
+	printf("DTB load addr 0x%08llx size %u Bytes\n", 
+	       v2->dtb_addr, v2->dtb_size);
+
+	return 0;
+}
+
 #if !defined(CONFIG_SPL_BUILD)
 /**
  * android_print_contents - prints out the contents of the Android format image
@@ -194,21 +231,42 @@ void android_print_contents(const struct andr_img_hdr *hdr)
 	u32 os_ver = hdr->os_version >> 11;
 	u32 os_lvl = hdr->os_version & ((1U << 11) - 1);
 
-	printf("%skernel size:      %x\n", p, hdr->kernel_size);
-	printf("%skernel address:   %x\n", p, hdr->kernel_addr);
-	printf("%sramdisk size:     %x\n", p, hdr->ramdisk_size);
-	printf("%sramdisk address:  %x\n", p, hdr->ramdisk_addr);
-	printf("%ssecond size:      %x\n", p, hdr->second_size);
-	printf("%ssecond address:   %x\n", p, hdr->second_addr);
-	printf("%stags address:     %x\n", p, hdr->tags_addr);
-	printf("%spage size:        %x\n", p, hdr->page_size);
+	printf("\n");
+	printf("v0 header ------\n");
+	printf("%sheader version  : 0x%x\n", p, hdr->header_version);
+	printf("%skernel size     : %d\n", p, hdr->kernel_size);
+	printf("%skernel address  : 0x%x\n", p, hdr->kernel_addr);
+	printf("%sramdisk size    : %d\n", p, hdr->ramdisk_size);
+	printf("%sramdisk address : 0x%x\n", p, hdr->ramdisk_addr);
+	printf("%ssecond size     : %d\n", p, hdr->second_size);
+	printf("%ssecond address  : 0x%x\n", p, hdr->second_addr);
+	printf("%stags address    : 0x%x\n", p, hdr->tags_addr);
+	printf("%spage size       : %d\n", p, hdr->page_size);
 	/* ver = A << 14 | B << 7 | C         (7 bits for each of A, B, C)
 	 * lvl = ((Y - 2000) & 127) << 4 | M  (7 bits for Y, 4 bits for M) */
-	printf("%sos_version:       %x (ver: %u.%u.%u, level: %u.%u)\n",
+	printf("%sos_version      : 0x%x (ver: %u.%u.%u, level: %u.%u)\n",
 	       p, hdr->os_version,
 	       (os_ver >> 7) & 0x7F, (os_ver >> 14) & 0x7F, os_ver & 0x7F,
 	       (os_lvl >> 4) + 2000, os_lvl & 0x0F);
-	printf("%sname:             %s\n", p, hdr->name);
-	printf("%scmdline:          %s\n", p, hdr->cmdline);
+	printf("%sname            : %s\n", p, hdr->name);
+	printf("%scmdline         : %s\n", p, hdr->cmdline);
+
+	/* show header version 1 content */
+	if (hdr->header_version > 0) {
+		struct andr_img_hdr_v1 * hdrv1 = (struct andr_img_hdr_v1*)hdr;
+		printf("v1 header ------\n");
+		printf("%srecovery_dtbo_size   : %u\n", p, hdrv1->recovery_dtbo_size);
+		printf("%srecovery_dtbo_offset : %llu\n", p, hdrv1->recovery_dtbo_offset);
+		printf("%sheader_size          : %u\n", p, hdrv1->header_size);
+	}
+
+	/* show header version 2 content */
+	if (hdr->header_version > 1) {
+		struct andr_img_hdr_v2 * hdrv2 = (struct andr_img_hdr_v2*)hdr;
+		printf("v2 header ------\n");
+		printf("%sdtb_size             : %u\n", p, hdrv2->dtb_size);
+		printf("%sdtb_addr             : 0x%llx\n", p, hdrv2->dtb_addr);
+	}
+	printf("\n");
 }
 #endif
