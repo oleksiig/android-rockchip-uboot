@@ -61,6 +61,7 @@
     "uuid_gpt_system=CF16C17A-7935-421F-80AC-BD870520E000\0" \
     "uuid_gpt_vendor=7C57E557-063D-485D-B9F1-A3A7B3614901\0" \
     "uuid_gpt_cache=850FCD31-6A0D-44C4-848B-4781879301F1\0" \
+    "uuid_gpt_vbmeta=43E69039-4608-4591-8C92-FF5758DB76E6\0" \
     "uuid_gpt_misc=E4AD2B83-18C9-4C08-8DD6-99B3C80598C9\0" \
     "uuid_gpt_frp=888FCC59-A68E-4BA3-8D52-7F81628F5147\0" \
     "uuid_gpt_metadata=75028084-CF5A-4191-9A1B-E208FC399DC2\0" \
@@ -70,6 +71,7 @@
         "name=system,size=2G,uuid=${uuid_gpt_system};" \
         "name=vendor,size=256M,uuid=${uuid_gpt_vendor};" \
         "name=cache,size=100M,uuid=${uuid_gpt_cache};" \
+        "name=vbmeta,size=512K,uuid=${uuid_gpt_vbmeta};" \
         "name=misc,size=512K,uuid=${uuid_gpt_misc};" \
         "name=frp,size=512K,uuid=${uuid_gpt_frp};" \
         "name=metadata,size=16M,uuid=${uuid_gpt_metadata};" \
