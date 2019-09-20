@@ -79,7 +79,8 @@
     "fstype_system=ext4\0" \
     "fstype_vendor=ext4\0" \
     "fstype_cache=ext4\0" \
-    "fstype_userdata=ext4\0"
+    "fstype_userdata=ext4\0" \
+    "serial#=3399\0"
 
 #endif /* ifndef CONFIG_SPL_BUILD */
 
