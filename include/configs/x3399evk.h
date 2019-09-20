@@ -18,7 +18,7 @@
 #define SDRAM_MAX_SIZE                          0xf8000000
 
 #define CONFIG_SYS_SDRAM_BASE                   0
-#define CONFIG_SYS_MALLOC_LEN                   (32 << 20)
+#define CONFIG_SYS_MALLOC_LEN                   (64 * 1024 * 1024)
 #define CONFIG_SYS_CBSIZE                       1024
 #define CONFIG_SKIP_LOWLEVEL_INIT
 
