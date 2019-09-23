@@ -67,7 +67,7 @@
     "uuid_gpt_metadata=75028084-CF5A-4191-9A1B-E208FC399DC2\0" \
     "uuid_gpt_userdata=196D4D41-83B5-4B2C-899D-02FE19D27BCA\0" \
     "partitions=uuid_disk=${uuid_gpt_disk};" \
-        "name=boot,start=32M,size=32M,uuid=${uuid_gpt_boot};" \
+        "name=boot,start=32M,size=16M,uuid=${uuid_gpt_boot};" \
         "name=system,size=2G,uuid=${uuid_gpt_system};" \
         "name=vendor,size=256M,uuid=${uuid_gpt_vendor};" \
         "name=cache,size=100M,uuid=${uuid_gpt_cache};" \
