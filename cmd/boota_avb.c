@@ -290,6 +290,12 @@ static int do_boot_android_avb(cmd_tbl_t *cmdtp, int flag, int argc, char * cons
 		return CMD_RET_FAILURE;
 	}
 
+	if (img_hdr->header_version < 2) {
+		printf("avb_flow: Unsupported Android Image header version %d\n",
+			img_hdr->header_version);
+		return CMD_RET_FAILURE;
+	}
+
 	/* */
 	android_print_contents(img_hdr);
 
