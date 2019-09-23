@@ -295,8 +295,23 @@ static int do_boot_android_avb(cmd_tbl_t *cmdtp, int flag, int argc, char * cons
 
 	/* */
 	android_image_get_kernel(img_hdr, 0, &kernel_addr, &size);
-	pr_info("Copy Kernel from 0x%08lx to 0x%08lx ...\n", kernel_addr, (ulong)img_hdr->kernel_addr);
-	memcpy((void*)((ulong)img_hdr->kernel_addr), (ulong*)kernel_addr, size);
+
+	if (android_image_get_kcomp(img_hdr) == IH_COMP_LZ4) {
+		pr_info("Decompressing (LZ4) Kernel from 0x%08lx to 0x%08lx ...\n", kernel_addr, (ulong)img_hdr->kernel_addr);
+
+		size_t dst_size = 0;
+		if (img_hdr->ramdisk_addr > img_hdr->kernel_addr) {
+			dst_size = img_hdr->ramdisk_addr - img_hdr->kernel_addr;
+		}
+
+		int ret = ulz4fn((ulong*)kernel_addr, size, (ulong*)img_hdr->kernel_addr, &dst_size);
+		if (ret < 0) {
+			pr_err("%s: Kernel (LZ4) decompress failed, error %d\n", __func__, ret);
+		}
+	} else {
+		pr_info("Copy uncompressed Kernel from 0x%08lx to 0x%08lx ...\n", kernel_addr, (ulong)img_hdr->kernel_addr);
+		memcpy((void*)((ulong)img_hdr->kernel_addr), (ulong*)kernel_addr, size);
+	}
 
 	android_image_get_dtb(img_hdr, &dtb_addr, &size);
 	pr_info("Copy DTB from 0x%08lx to 0x%08lx ...\n", dtb_addr, (ulong)img_hdr_v2->dtb_addr);
