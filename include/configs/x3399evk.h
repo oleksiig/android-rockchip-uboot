@@ -53,10 +53,9 @@
 #ifndef CONFIG_SPL_BUILD
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-    "fdt_addr_r=0x01f00000\0" \
-    "kernel_addr_r=0x02080000\0" \
-    "ramdisk_addr_r=0x04000000\0" \
     "uuid_gpt_disk=5DE6B69D-5FFA-4CEA-97DE-A5F287DB3B44\0" \
+    "uuid_gpt_uboot=3E4FC4F8-AD40-4519-A73F-A070E0190BFE\0" \
+    "uuid_gpt_trust=D61F2101-DBC0-4928-A05C-B74CD12B9E42\0" \
     "uuid_gpt_boot=F4C2B80D-FFD1-4D76-A63C-FF56ACA2F3B0\0" \
     "uuid_gpt_system=CF16C17A-7935-421F-80AC-BD870520E000\0" \
     "uuid_gpt_vendor=7C57E557-063D-485D-B9F1-A3A7B3614901\0" \
@@ -67,7 +66,9 @@
     "uuid_gpt_metadata=75028084-CF5A-4191-9A1B-E208FC399DC2\0" \
     "uuid_gpt_userdata=196D4D41-83B5-4B2C-899D-02FE19D27BCA\0" \
     "partitions=uuid_disk=${uuid_gpt_disk};" \
-        "name=boot,start=32M,size=16M,uuid=${uuid_gpt_boot};" \
+        "name=uboot,start=8M,size=4M,uuid=${uuid_gpt_uboot};" \
+        "name=trust,size=4M,uuid=${uuid_gpt_trust};" \
+        "name=boot,size=32M,uuid=${uuid_gpt_boot};" \
         "name=system,size=2G,uuid=${uuid_gpt_system};" \
         "name=vendor,size=256M,uuid=${uuid_gpt_vendor};" \
         "name=cache,size=100M,uuid=${uuid_gpt_cache};" \
@@ -79,6 +80,7 @@
     "fstype_system=ext4\0" \
     "fstype_vendor=ext4\0" \
     "fstype_cache=ext4\0" \
+    "fstype_metadata=ext4\0" \
     "fstype_userdata=ext4\0" \
     "serial#=3399\0"
 
