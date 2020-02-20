@@ -3,7 +3,9 @@
  */
 
 #include <common.h>
+#include <bootm.h>
 #include <malloc.h>
+#include <mapmem.h>
 #include <android_image.h>
 #include <../lib/libavb/libavb.h>
 
@@ -220,7 +222,7 @@ static int do_boot_android_avb(cmd_tbl_t *cmdtp, int flag, int argc, char * cons
 	struct andr_img_hdr_v2 *img_hdr_v2 = NULL;
 	bool unlocked = false;
 	char *cmdline = NULL;
-	unsigned long kernel_addr = 0, dtb_addr = 0, size = 0;
+	unsigned long kernel_addr = 0, dtb_addr = 0, ramdisk_addr = 0, size = 0;
 
 	printf("avb_flow: Android Verified Boot 2.0 - AVB version %s\n", avb_version_string());
 
@@ -282,53 +284,74 @@ static int do_boot_android_avb(cmd_tbl_t *cmdtp, int flag, int argc, char * cons
 
 	if (img_hdr == NULL) {
 		printf("avb_flow: No loaded partition(s)\n");
+		avb_slot_verify_data_free(out_data);
 		return CMD_RET_FAILURE;
 	}
 
 	if (android_image_check_header(img_hdr) != 0) {
 		pr_err("%s: ** Invalid Android Image header **\n", __func__);
+		avb_slot_verify_data_free(out_data);
 		return CMD_RET_FAILURE;
 	}
 
 	if (img_hdr->header_version < 2) {
 		printf("avb_flow: Unsupported Android Image header version %d\n",
 			img_hdr->header_version);
+		avb_slot_verify_data_free(out_data);
 		return CMD_RET_FAILURE;
 	}
 
 	/* */
 	android_print_contents(img_hdr);
 
-	/* */
-	android_image_get_kernel(img_hdr, 0, &kernel_addr, &size);
+	/* BOOTM_STATE_START */
+	memset((void *)&images, 0, sizeof(images));
 
-	if (android_image_get_kcomp(img_hdr) == IH_COMP_LZ4) {
-		pr_info("Decompressing (LZ4) Kernel from 0x%08lx to 0x%08lx ...\n", kernel_addr, (ulong)img_hdr->kernel_addr);
+#ifdef CONFIG_LMB
+	lmb_init_and_reserve_range(&images.lmb,
+		(phys_addr_t)env_get_bootm_low(), env_get_bootm_size(), NULL);
+#endif
 
-		size_t dst_size = 0;
-		if (img_hdr->ramdisk_addr > img_hdr->kernel_addr) {
-			dst_size = img_hdr->ramdisk_addr - img_hdr->kernel_addr;
-		}
+	/* BOOTM_STATE_FINDOS */
 
-		int ret = ulz4fn((ulong*)kernel_addr, size, (ulong*)img_hdr->kernel_addr, &dst_size);
-		if (ret < 0) {
-			pr_err("%s: Kernel (LZ4) decompress failed, error %d\n", __func__, ret);
-		}
-	} else {
-		pr_info("Copy uncompressed Kernel from 0x%08lx to 0x%08lx ...\n", kernel_addr, (ulong)img_hdr->kernel_addr);
-		memcpy((void*)((ulong)img_hdr->kernel_addr), (ulong*)kernel_addr, size);
+	/* get kernel image header, start address and length */
+	if (android_image_get_kernel(img_hdr, images.verify, &kernel_addr, &size)) {
+		printf("Failed to find Kernel in Android image\n");
+		avb_slot_verify_data_free(out_data);
+		return CMD_RET_FAILURE;
 	}
 
-	android_image_get_dtb(img_hdr, &dtb_addr, &size);
-	pr_info("Copy DTB from 0x%08lx to 0x%08lx ...\n", dtb_addr, (ulong)img_hdr_v2->dtb_addr);
-	memcpy((ulong*)img_hdr_v2->dtb_addr, (ulong*)dtb_addr, size);
+	images.os.image_start = kernel_addr;
+	images.os.image_len = size;
+	images.os.type = IH_TYPE_KERNEL;
+	images.os.os = IH_OS_LINUX;
+	images.os.arch = IH_ARCH_ARM64;
+	images.os.start = (phys_addr_t)map_sysmem((phys_addr_t)img_hdr, 0);
+	images.os.comp = android_image_get_kcomp(img_hdr);
+	images.os.end = android_image_get_end(img_hdr);
+	images.os.load = android_image_get_kload(img_hdr);
+	images.ep = images.os.load;
 
-//  android_image_get_ramdisk(img_hdr, &ramdisk_addr, &size);
+	/* BOOTM_STATE_FINDOTHER */
+	/* find ramdisk */
+	if(!android_image_get_ramdisk(img_hdr, &ramdisk_addr, &size)) {
+		images.rd_start = ramdisk_addr;
+		images.rd_end = ramdisk_addr + size;
+	} else {
+		puts("## No Ramdisk\n");
+	}
 
-	pr_info("booti 0x%08lx - 0x%08lx\n",
-		(ulong)img_hdr->kernel_addr, (ulong)img_hdr_v2->dtb_addr);
+	/* find flattened device tree */
+	if(!android_image_get_dtb(img_hdr, &dtb_addr, &size) && img_hdr_v2 != NULL) {
+		images.ft_addr = (char*)dtb_addr;
+		images.ft_len = size;
+	} else {
+		puts("## Could not find a valid device tree\n");
+	}
 
-	return CMD_RET_SUCCESS;
+	return do_bootm_states(cmdtp, flag, 0, NULL,
+		BOOTM_STATE_RAMDISK | BOOTM_STATE_LOADOS |
+		BOOTM_STATE_OS_PREP | BOOTM_STATE_OS_GO, &images, 1);
 }
 
 U_BOOT_CMD(
