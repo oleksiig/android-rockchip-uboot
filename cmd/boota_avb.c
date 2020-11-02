@@ -217,7 +217,7 @@ static struct AvbOps avb_ops =
 static int do_boot_android_avb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	AvbSlotVerifyResult slot_result;
-	AvbSlotVerifyData *out_data;
+	AvbSlotVerifyData *out_data = NULL;
 	struct andr_img_hdr *img_hdr = NULL;
 	struct andr_img_hdr_v2 *img_hdr_v2 = NULL;
 	bool unlocked = false;
