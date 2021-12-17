@@ -393,6 +393,36 @@ config ROCKCHIP_SPI_IMAGE
 	  containing U-Boot. The image is built by binman. U-Boot sits near
 	  the start of the image.
 
+config UBOOT_SIZE_KB
+	int "Per u-boot.bin Image size, unit: KB"
+	default 1024
+
+config UBOOT_NUM
+	int "Number of u-boot.bin image being packed into trust.img"
+	default 4
+
+config TRUST_SIZE_KB
+	int "Per trust Image size, unit: KB"
+	default 2048
+
+config TRUST_NUM
+	int "Number of trust image being packed into trust.img"
+	default 2
+
+config TRUST_RSA_MODE
+	int "RSA mode of trust.img on ARM64"
+	default 2
+	help
+	  The RSA mode for tools to pack, the mode id can be:
+	  0: none; 1: RSA-1024; 2: RSA-2048; 3: RSA-2048-pss.
+
+config TRUST_SHA_MODE
+	int "SHA mode of trust.img on ARM64"
+	default 3
+	help
+	  The SHA mode for tools to pack, the mode id can be:
+	  0: none; 1: sha1; 2: sha256 RK big endian; 3: sha256 little endian.
+
 source "arch/arm/mach-rockchip/px30/Kconfig"
 source "arch/arm/mach-rockchip/rk3036/Kconfig"
 source "arch/arm/mach-rockchip/rk3128/Kconfig"
