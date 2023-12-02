@@ -1414,6 +1414,10 @@ static int rk3399_clk_probe(struct udevice *dev)
 	}
 #endif
 
+#if defined(CFG_RK3399_FORCE_CLK_INIT)
+	init_clocks = true;
+#endif
+
 	if (init_clocks)
 		rkclk_init(priv->cru);
 

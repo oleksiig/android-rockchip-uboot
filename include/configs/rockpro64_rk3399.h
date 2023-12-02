@@ -14,6 +14,8 @@
 #define GICR_BASE					0xFEF00000
 #define GICC_BASE					0xFFF00000
 
+#define CFG_RK3399_FORCE_CLK_INIT	1
+
 #define CFG_IRAM_BASE				0xff8c0000
 #define CFG_SYS_SDRAM_BASE			0x00000000
 
