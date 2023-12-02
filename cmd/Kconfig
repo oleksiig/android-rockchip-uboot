@@ -214,6 +214,11 @@ endmenu
 
 menu "Boot commands"
 
+config CMD_BOOT_ANDROID_AVB
+	bool "boota_avb"
+	help
+	  Perform loading of Android boot image with AVB flow.
+
 config CMD_BOOTD
 	bool "bootd"
 	default y
